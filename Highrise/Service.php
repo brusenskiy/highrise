@@ -1,16 +1,21 @@
 <?php
 
-class YouCompanyHighrise extends \Highrise\Api
+namespace Highrise;
+
+use Ext\Date;
+use Ext\String;
+
+abstract class Service extends Api
 {
     /**
-     * @param \Highrise\Person $_person
+     * @param Person $_person
      * @param string $_task
      * @param string $_text
      * @param array $_additionalTags
-     * @throws Exception
+     * @throws \Exception
      * @return array
      */
-    public function registerFormRequest(\Highrise\Person $_person,
+    public function registerFormRequest(Person $_person,
                                         $_task,
                                         $_text = null,
                                         array $_additionalTags = null)
@@ -21,7 +26,7 @@ class YouCompanyHighrise extends \Highrise\Api
 
         $result = array();
 
-        $task = new \Highrise\Task();
+        $task = new Task();
         $task->setBody($_task);
         $task->setFrame('tomorrow');
         $task->setSubjectType('Party');
@@ -36,34 +41,34 @@ class YouCompanyHighrise extends \Highrise\Api
 
         $insert = $this->pushTask($task);
         if ($insert['status'] == 201) {
-//            $task = \Highrise\Task::factory(
+//            $task = Task::factory(
 //                simplexml_load_string($insert['response'])
 //            );
 
         } else {
-            $result[] = 'Task wasn\'t created';
+            $result[] = 'Task was not created';
         }
 
         if ($_text) {
-            $note = new \Highrise\Note();
+            $note = new Note();
             $note->setBody("Request:\r\n\r\n$_text");
             $note->setSubjectType('Party');
             $note->setSubjectId($_person->getId());
 
             $insert = $this->pushNote($note);
             if ($insert['status'] == 201) {
-//                $note = \Highrise\Note::factory(
+//                $note = Note::factory(
 //                    simplexml_load_string($insert['response'])
 //                );
 
             } else {
-                $result[] = 'Note wasn\'t created';
+                $result[] = 'Note was not created';
             }
         }
 
         $appendTags = array(
             date('Y'),
-            \Ext\String::toLower(\Ext\Date::getMonth(date('n'), 1)),
+            String::toLower(Date::getMonth(date('n'), 1)),
             'Site request'
         );
 
@@ -72,14 +77,14 @@ class YouCompanyHighrise extends \Highrise\Api
         }
 
         foreach ($appendTags as $appendTag) {
-            $tag = new \Highrise\Tag();
+            $tag = new Tag();
             $tag->setName($appendTag);
             $tag->setSubjectType('people');
             $tag->setSubjectId($_person->getId());
 
             $insert = $this->pushTag($tag);
             if ($insert['status'] == 201) {
-//                $tag = \Highrise\Tag::factory(
+//                $tag = Tag::factory(
 //                    simplexml_load_string($insert['response'])
 //                );
 
@@ -96,14 +101,14 @@ class YouCompanyHighrise extends \Highrise\Api
      * @param string $_email
      * @param string $_phone
      * @param string $_referrer
-     * @return bool|\Highrise\Person
+     * @return bool|Person
      */
     public function getPerson($_name,
                               $_email = null,
                               $_phone = null,
                               $_referrer = null)
     {
-        $new = new \Highrise\Person;
+        $new = new Person;
 
         $name = explode(' ', trim($_name));
         $new->setFirstName($name[0]);
@@ -112,7 +117,7 @@ class YouCompanyHighrise extends \Highrise\Api
             $new->setLastName(implode(' ', $name));
         }
 
-        if ($_email && \Ext\String::isEmail($_email)) $new->setEmail($_email);
+        if ($_email && String::isEmail($_email)) $new->setEmail($_email);
         if ($_phone) $new->setPhone($_phone);
 
         if ($_referrer) {
@@ -123,16 +128,16 @@ class YouCompanyHighrise extends \Highrise\Api
             }
         }
 
-        $matchEmail = \Ext\String::toLower($new->getEmail());
+        $matchEmail = String::toLower($new->getEmail());
         foreach ($this->getPeople() as $_person) {
-            if (\Ext\String::toLower($_person->getEmail()) == $matchEmail) {
+            if (String::toLower($_person->getEmail()) == $matchEmail) {
                 return $_person;
             }
         }
 
         $insert = $this->pushPerson($new);
         if ($insert['status'] == 201) {
-            return \Highrise\Person::factory(
+            return Person::factory(
                 simplexml_load_string($insert['response'])
             );
         }

@@ -7,15 +7,16 @@ require_once 'Highrise/Person.php';
 require_once 'Highrise/Note.php';
 require_once 'Highrise/Task.php';
 require_once 'Highrise/Tag.php';
-require_once 'YouCompanyHighrise.php';
 
-$api = new YouCompanyHighrise('you-company-login', 'user-token');
+class YouCompanyHighriseService extends Highrise\Service {}
 
-$result = $api->registerFormRequest(
-    $api->getPerson('Jonh Smith', 'jsmith@gmail.com', '929 9799810', 'mail'),
+$serv = new YouCompanyHighriseService('you-company-login', 'user-token');
+
+$result = $serv->registerFormRequest(
+    $serv->getPerson('Jonh Smith', 'jsmith@gmail.com', '929 9799810', 'mail'),
     'Call',
     'China Wants Its Movies to Be Big in the U.S., Too',
     array('Logo')
 );
 
-print_r($result);
+var_dump($result);
